@@ -4,5 +4,5 @@
     Raphael LEONARDI
     Baptiste PRAS
 ## Description
-    Todo : donner la clé à baptiste
-         : absolument tout à faire
+    Todo : absolument tout à faire
+         : parler à mon ex
