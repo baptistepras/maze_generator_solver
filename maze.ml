@@ -72,7 +72,7 @@ let rec aux tableau indice_ligne file largeur hauteur =
   
 let print_line list_char = List.iter (fun c -> Printf.printf"%c" c) list_char
 
-let print_file list_list_char = List.iter print_line list_list_char
+let print_file list_list_char = List.iter print_line list_list_char;;
   
 
 let constructeur  file_name = 
@@ -81,11 +81,11 @@ let constructeur  file_name =
   let d = (-1, -1)  in
   let a = (-1, -1) in
 
-  (* On définit la taille du labyrinthe*)+
+  (* On définit la taille du labyrinthe*)
   let hauteur = List.length file in
   let largeur =
   match file with 
-  | e::ll ->  List.length e;
+  | e::ll ->  List.length e
   | _     -> failwith"Y  a rien dans le labyrinthe"   in
   
   
@@ -116,7 +116,6 @@ let print_walls liste = List.iter print_line liste
 let file = load_file path
 
 let a = constructeur path
-
-let () = print_tab a
+let () = print_tab a.walls
 
 let fin = Printf.printf"End...\n"
