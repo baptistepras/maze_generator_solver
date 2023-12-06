@@ -75,6 +75,21 @@ let print_line list_char = List.iter (fun c -> Printf.printf"%c" c) list_char
 let print_file list_list_char = List.iter print_line list_list_char;;
   
 
+
+let rec trouve_depart_ligne ligne trouveD trouveA depart arrivee i j largeur =
+  if (trouveA && trouveD) then (depart, arrivee) else
+
+  let c = ligne.(i) in
+  match c with 
+   | 'E' -> if trouveD then failwith"Plusieurs entrées" else
+              trouve_depart_ligne ligne true trouveA (i, j) arrivee (i+1) j largeur
+   | 'S' -> if trouveA then failwith"Plusieurs sorties" else
+    trouve_depart_ligne ligne trouveD true depart (i, j) (i+1) j largeur
+   | _ -> if i = largeur-1 then (depart, arrivee)
+            else trouve_depart_ligne ligne trouveD trouveA depart arrivee (i+1) j largeur
+
+
+
 let constructeur  file_name = 
   let file = load_file file_name in
   
@@ -94,6 +109,7 @@ let constructeur  file_name =
   let tab = Array.make_matrix hauteur largeur 0  in
 
   aux tab 0 file largeur hauteur;
+
   {taille = (hauteur, largeur); walls = tab; depart = d; arrivee = a}
   
   
