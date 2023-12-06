@@ -1,10 +1,8 @@
 let () = Printf.printf"Begin...\n"
 
-type layout = int array array
-
 type labyrinthe = {
   taille : int*int;
-  walls : layout;
+  walls : int array array;
   depart : int*int;
   arrivee : int*int;
 }
@@ -42,17 +40,18 @@ let transforme c =
 
 
 
-let rec transforme_ligne ligne taille indice tableau = 
+let rec transforme_ligne ligne taille indice tableau largeur indice_ligne hauteur = 
   
-  if taille < 0 then failwith"Fichier non valide" else
+  if taille < 0 then failwith"Ligne trop grande" else
 
   match ligne with 
   | c::ll ->
     let b = transforme(c) in
-    
-    tableau.(indice) <- b;
-    transforme_ligne ll (taille - 1) (indice + 1 ) tableau
-  | [] -> ()
+    tableau.(indice) <- b; 
+    if (indice = 0 || indice = largeur-1 || indice_ligne = 0 || indice_ligne = hauteur-1) && b <> 0
+      then failwith"Labyrinthe pas fermé"
+    else transforme_ligne ll (taille - 1) (indice + 1 ) tableau largeur indice_ligne hauteur
+  | [] -> if taille <> 0 then failwith"Ligne trop petite" else ()
   
 let print_ints list_int = Array.iter (fun x -> Printf.printf"%d" x) list_int; Printf.printf"\n"
 
@@ -65,12 +64,11 @@ let print_tab tab = Array.iter print_ints tab
 
 
 let rec aux tableau indice_ligne file largeur hauteur = 
-  if indice_ligne > hauteur then failwith"Fichier non valide" else
 
   match file with 
-  | e::ll ->  transforme_ligne e largeur 0 tableau.(indice_ligne); 
+  | e::ll ->  transforme_ligne e largeur 0 tableau.(indice_ligne) largeur indice_ligne hauteur; 
   aux tableau (indice_ligne + 1 ) ll largeur hauteur
-  | [] -> () 
+  | [] -> ()
   
 let print_line list_char = List.iter (fun c -> Printf.printf"%c" c) list_char
 
@@ -78,14 +76,12 @@ let print_file list_list_char = List.iter print_line list_list_char
   
 
 let constructeur  file_name = 
-  (*let file = List.map (fun str -> Array.of_list (String.split_on_char ' ' str)) (load_file file_name) in
-  *)
   let file = load_file file_name in
   
-  let depart = 0  in
-  let arrivee = 0 in
+  let d = (-1, -1)  in
+  let a = (-1, -1) in
 
-  (* On définit la taille du labyrinthe*)
+  (* On définit la taille du labyrinthe*)+
   let hauteur = List.length file in
   let largeur =
   match file with 
@@ -98,7 +94,7 @@ let constructeur  file_name =
   let tab = Array.make_matrix hauteur largeur 0  in
 
   aux tab 0 file largeur hauteur;
-  tab
+  {taille = (hauteur, largeur); walls = tab; depart = d; arrivee = a}
   
   
 
