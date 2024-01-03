@@ -1,137 +1,177 @@
-let () = Printf.printf"Begin...\n"
-
 type labyrinthe = {
-  taille : int*int;
-  walls : int array array;
+  largeur : int;
+  hauteur : int;
+  murs_largeur : int;
+  murs_hauteur : int;
+  murs : int array array;
   depart : int*int;
-  arrivee : int*int;
+  arrivee : int*int
 }
 
-let path = "test/maze_4x8.laby"
+
+
+let path = "test/maze_6x6.laby"
 
 let suite l = 
   match l with 
   | []    -> []
   | e::ll -> ll 
 
-let string_to_char_list (s : string) : char list =
-  s |> String.to_seq |> List.of_seq
-  
- 
+
+
 let load_file file_path =
   let in_c = open_in file_path in
  
   let rec aux file =
     try
-      let line = string_to_char_list(input_line file) in
+      let line = input_line file in
       line::aux file
     with
       End_of_file -> []  in
   aux in_c
 
 let transforme c = 
-  
   match c with 
+  | '+' | '-' | '|' -> 0
   | ' ' -> 1
   | 'E' -> 2
   | 'S' -> 3
-  | '+' | '-' | '|' -> 0
   | _   -> failwith"Caractère %s interdit" c
 
-
-
-let rec transforme_ligne ligne taille indice tableau largeur indice_ligne hauteur = 
-  
-  if taille < 0 then failwith"Ligne trop grande" else
-
-  match ligne with 
-  | c::ll ->
-    let b = transforme(c) in
-    tableau.(indice) <- b; 
-    if (indice = 0 || indice = largeur-1 || indice_ligne = 0 || indice_ligne = hauteur-1) && b <> 0
-      then failwith"Labyrinthe pas fermé"
-    else transforme_ligne ll (taille - 1) (indice + 1 ) tableau largeur indice_ligne hauteur
-  | [] -> if taille <> 0 then failwith"Ligne trop petite" else ()
-  
-let print_ints list_int = Array.iter (fun x -> Printf.printf"%d" x) list_int; Printf.printf"\n"
-
-let print_tab tab = Array.iter print_ints tab
-
-
-
-
+let verifie_caractere c numero_ligne indice ligne_max indice_max = 
+  (*si la ligne est paire , si l indice dans la ligne est pair, on doit avoir un +  , sinon on doit avoir *)
+  (*si on est sur la premiere ligne on verifie si on a un + ou un -*)
+  if indice > indice_max then
+    failwith"Ligne trop grande"
+  else
+    if numero_ligne = 0 || numero_ligne = ligne_max then
+      if indice mod 2 = 0 then c = '+' else c = '-' 
+    else
+      (*si on est au début ou a la fin de la ligne on doit avoir un caractere fermant*)
+      if indice == 0 || indice == indice_max then
+        if numero_ligne mod 2  = 0 then c = '+' else c = '|'
+      else
+        (*sinon on verifie selon la parite de numero_ligne et indice*)
+        match numero_ligne mod 2 , indice mod 2 with 
+        | 0 , 0 ->  c == '+'
+        | 0 , 1 ->  c == '-' || c == 'E' || c == 'S' || c == ' '
+        | 1 , 0 ->  c == '|' || c == 'E' || c == 'S' || c == ' '
+        | 1 , 1 ->  c == 'S' || c == 'E' || c == ' '
+        | _ , _ -> failwith"Ya un probleme avec le modulo" (*ce cas ne sera jamais atteint, c'est juste pour eviter les warnings*) 
 
 
 
-let rec aux tableau indice_ligne file largeur hauteur = 
+let print_2d_array arr =
+  Array.iter (fun row ->
+    Array.iter (fun elem -> print_int elem; print_string " ") row;
+    print_newline ()
+  ) arr
 
+let rec parcours_ligne ligne numero_ligne array indice indice_max= 
+    
+  let c = ligne.[indice] in
+  array.(numero_ligne).(indice) <- transforme c;
+  if indice < indice_max then
+    parcours_ligne ligne numero_ligne array (indice+1) indice_max 
+  else
+    ()
+
+let rec verifieLigne (ligne:string) numero_ligne indice ligne_max indice_max (depart: int*int) (arrivee:int*int) =
+  if indice > indice_max then
+    (depart, arrivee)
+  else
+    let c = ligne.[indice] in
+    (* Vérifie si le caractère est au bon endroit *)
+    if not(verifie_caractere c numero_ligne indice ligne_max indice_max) then
+      failwith "Caractere au mauvais endroit"
+    else
+      if c == 'E' then
+        if depart = (-1, -1) then
+          let new_depart = (numero_ligne, indice) in
+          verifieLigne ligne numero_ligne (indice + 1) indice_max indice_max new_depart arrivee
+        else
+          failwith "Plusieurs departs"
+      else if c == 'S' then
+        if arrivee = (-1, -1) then
+          let new_arrivee = (numero_ligne, indice) in
+          verifieLigne ligne numero_ligne (indice + 1) indice_max indice_max depart new_arrivee
+        else
+          failwith "Plusieurs arrivees"
+      else
+        verifieLigne ligne numero_ligne (indice + 1) indice_max indice_max depart arrivee
+
+
+
+let rec sousVerifie (file:string list) largeur hauteur numero_ligne (depart: int*int) (arrivee:int*int)  = 
   match file with 
-  | e::ll ->  transforme_ligne e largeur 0 tableau.(indice_ligne) largeur indice_ligne hauteur; 
-  aux tableau (indice_ligne + 1 ) ll largeur hauteur
-  | [] -> ()
+  | []    -> (depart, arrivee)
+  | ligne::reste -> 
+      let nouveau_depart, nouveau_arrivee = verifieLigne ligne numero_ligne 0 (hauteur - 1) (largeur - 1) depart arrivee in 
+      sousVerifie reste largeur hauteur (numero_ligne + 1) nouveau_depart nouveau_arrivee
+
+let verifie (file:string list) largeur hauteur = 
+  sousVerifie file largeur hauteur 0 (-1, -1) (-1, -1)
   
-let print_line list_char = List.iter (fun c -> Printf.printf"%c" c) list_char
-
-let print_file list_list_char = List.iter print_line list_list_char;;
-  
-
-
-let rec trouve_depart_ligne ligne trouveD trouveA depart arrivee i j largeur =
-  if (trouveA && trouveD) then (depart, arrivee) else
-
-  let c = ligne.(i) in
-  match c with 
-   | 'E' -> if trouveD then failwith"Plusieurs entrées" else
-              trouve_depart_ligne ligne true trouveA (i, j) arrivee (i+1) j largeur
-   | 'S' -> if trouveA then failwith"Plusieurs sorties" else
-    trouve_depart_ligne ligne trouveD true depart (i, j) (i+1) j largeur
-   | _ -> if i = largeur-1 then (depart, arrivee)
-            else trouve_depart_ligne ligne trouveD trouveA depart arrivee (i+1) j largeur
 
 
 
-let constructeur  file_name = 
-  let file = load_file file_name in
-  
-  let d = (-1, -1)  in
-  let a = (-1, -1) in
 
+let constructeur file_name = 
+  let file = load_file file_name in 
   (* On définit la taille du labyrinthe*)
   let hauteur = List.length file in
   let largeur =
   match file with 
-  | e::ll ->  List.length e
+  | e::ll ->  String.length e
   | _     -> failwith"Y  a rien dans le labyrinthe"   in
-  
-  
-  
+  let depart, arrivee = verifie file largeur hauteur in
 
-  let tab = Array.make_matrix hauteur largeur 0  in
-
-  aux tab 0 file largeur hauteur;
-
-  {taille = (hauteur, largeur); walls = tab; depart = d; arrivee = a}
-  
-  
-
-  
+  let _ = Printf.printf"Depart : (%d, %d)\n" (fst depart) (snd depart) in
+  let _ = Printf.printf"Arrivee : (%d, %d)\n" (fst arrivee) (snd arrivee) in
 
 
-  
+  (* on construit le labyrinthe*)
+  let layout = Array.make_matrix hauteur largeur 0 in
 
 
+  let rec parcours file numero_ligne array indice_max =
+    match file with 
+    | [] -> ()
+    | e::ll -> parcours_ligne e numero_ligne array 0 indice_max;
+              parcours ll (numero_ligne + 1) array indice_max; in
 
+  parcours file 0 layout (largeur - 1);
+  let l = (largeur - 1) / 2 in
+  let h = (hauteur - 1) / 2 in
+  { largeur = l;
+  hauteur = h;
+  murs_largeur = largeur;
+  murs_hauteur = hauteur;
+  murs = layout;
+  depart = depart;
+  arrivee = arrivee }
 
 let print_line line =
-  List.iter (fun c -> let s = transforme c in Printf.printf"%d " s) line;
+  String.iter (fun c -> let s = transforme c in Printf.printf"%d " s) line;
   Printf.printf"\n"
   
 let print_list liste = List.iter (fun x -> Printf.printf"%s\n" x) liste
-
-let print_walls liste = List.iter print_line liste
 let file = load_file path
 
-let a = constructeur path
-let () = print_tab a.walls
 
-let fin = Printf.printf"End...\n"
+let printLaby labyrinthe = 
+  Printf.printf "Hauteur : %d\n" labyrinthe.hauteur; 
+  Printf.printf "Largeur : %d\n" labyrinthe.largeur;
+  Printf.printf "Largeur des murs : %d\n" labyrinthe.murs_largeur;
+  Printf.printf "Hauteur des murs : %d\n" labyrinthe.murs_hauteur;
+  Printf.printf "Plan des murs : \n";
+  print_2d_array labyrinthe.murs 
+  
+
+
+
+let labyrinthe1 = constructeur path
+let () = Printf.printf"\n"
+let () = printLaby labyrinthe1
+
+let fin = Printf.printf"End\n"
