@@ -59,6 +59,48 @@ let verifie_caractere c numero_ligne indice ligne_max indice_max =
         | 1 , 1 ->  c == 'S' || c == 'E' || c == ' '
         | _ , _ -> failwith"Ya un probleme avec le modulo" (*ce cas ne sera jamais atteint, c'est juste pour eviter les warnings*) 
 
+let printMur numero_ligne indice = 
+  
+  match numero_ligne mod 2 , indice mod 2 with
+  | 0 , 0       -> Printf.printf"+"
+  | 0 , 1       -> Printf.printf"-"
+  | 1 , 0 | 1, 1-> Printf.printf"|"
+  | _, _ -> failwith"Probleme avec le modulo" (* cette ligne ne se fait jamais, c'est pur eviter les warnings du pattern matching *)
+
+let printCaractere (layout: int array array) numero_ligne indice = 
+  let i1 = layout.(numero_ligne).(indice) in
+  match i1 with 
+  | 0 -> printMur numero_ligne indice
+  | 1 -> Printf.printf" "
+  | 2 -> Printf.printf"E"
+  | 3 -> Printf.printf"S"
+  | _ -> failwith"Valeur interdite dans le layout"
+
+let  printLigne (layout : int array array) numero_ligne indice_max = 
+  let rec sousPrintLigne (layout : int array array) numero_ligne indice indice_max =
+    if indice > indice_max then (
+      Printf.printf"\n"
+    )
+    else(
+      printCaractere layout numero_ligne indice;
+      sousPrintLigne layout numero_ligne (indice + 1 ) indice_max ;) in
+      
+  sousPrintLigne layout numero_ligne 0 indice_max
+
+let rec sousAffiche layout numero_ligne ligne_max indice_max = 
+  if numero_ligne > ligne_max then(
+    Printf.printf"\n"
+  )else(
+    printLigne layout numero_ligne indice_max;
+    sousAffiche layout (numero_ligne + 1) ligne_max indice_max
+  )
+
+let afficheLabyrinthe labyrinthe = 
+  let indice_max = labyrinthe.murs_largeur - 1 in
+  let ligne_max = labyrinthe.murs_hauteur - 1 in
+  sousAffiche labyrinthe.murs 0 ligne_max indice_max;
+
+  ()
 
 
 let print_2d_array arr =
@@ -75,6 +117,9 @@ let rec parcours_ligne ligne numero_ligne array indice indice_max=
     parcours_ligne ligne numero_ligne array (indice+1) indice_max 
   else
     ()
+
+
+
 
 let rec verifieLigne (ligne:string) numero_ligne indice ligne_max indice_max (depart: int*int) (arrivee:int*int) =
   if indice > indice_max then
@@ -159,6 +204,9 @@ let print_list liste = List.iter (fun x -> Printf.printf"%s\n" x) liste
 let file = load_file path
 
 
+
+
+
 let printLaby labyrinthe = 
   Printf.printf "Hauteur : %d\n" labyrinthe.hauteur; 
   Printf.printf "Largeur : %d\n" labyrinthe.largeur;
@@ -173,5 +221,5 @@ let printLaby labyrinthe =
 let labyrinthe1 = constructeur path
 let () = Printf.printf"\n"
 let () = printLaby labyrinthe1
-
+let () =  afficheLabyrinthe labyrinthe1
 let fin = Printf.printf"End\n"
