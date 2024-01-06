@@ -225,16 +225,15 @@ let rec sousGenereVide array numero_ligne ligne_max indice_max =
 
 
 
-let genereLabyVide hauteur largeur = 
+let genereLabyVide hauteur largeur depart arrivee= 
   let largeur_murs  =  2 * largeur + 1 in
   let hauteurs_murs =  2 * hauteur + 1 in
-  let e = (1,1) in
-  let s = (3,1) in
   
    let lay = (Array.make_matrix hauteurs_murs  largeur_murs 0) in
     
     sousGenereVide lay 1 (hauteurs_murs-1) (largeur_murs -1);
-
+  lay.(fst depart).(snd depart)   <- 2;
+  lay.(fst arrivee).(snd arrivee) <- 3;
 
 
   {largeur = largeur;
@@ -242,8 +241,8 @@ let genereLabyVide hauteur largeur =
    murs_largeur = largeur_murs;
    murs_hauteur = hauteurs_murs;
    murs = lay;
-   depart = e;
-   arrivee = s 
+   depart = depart;
+   arrivee = arrivee; 
   
   } 
  
@@ -402,13 +401,30 @@ let rec sousGenereLaby layout numero_ligne indice (visitees : bool array array) 
     else
         ()
       
-    
+  
+let genereDepart hauteur largeur = 
+  (2*(Random.int hauteur  )+ 1, 2*(Random.int largeur) + 1)
+
+let rec genereArrivee depart hauteur largeur = 
+  let x = 2*(Random.int largeur) + 1 in
+  let y = 2*(Random.int hauteur) + 1 in
+  if (y = (fst depart)) && (x = (snd depart)) then
+    genereArrivee depart largeur hauteur 
+  else
+    (y,x)
 
 let genereLabyrinthe hauteur largeur = 
-  let laby = genereLabyVide hauteur largeur in
-  let depart = laby.depart in
+  let dep = genereDepart hauteur largeur in
+  let arr = genereArrivee dep hauteur largeur in
+
+
+
+  let laby = genereLabyVide hauteur largeur dep arr in
+  
   let visitees = Array.make_matrix laby.murs_hauteur  laby.murs_largeur  false in
-  sousGenereLaby laby.murs 1 1 visitees  (1,1) (laby.murs_largeur - 1) (laby.murs_hauteur - 1) ;
+  sousGenereLaby laby.murs (fst dep) (snd dep) visitees  dep (laby.murs_largeur - 1) (laby.murs_hauteur - 1) ;
+  laby.murs.(fst dep).(snd dep) <- 2;
+  laby.murs.(fst arr).(snd arr) <- 3;
   laby
 
  
@@ -418,8 +434,6 @@ let () = Printf.printf"\n"
 let () = printLaby labyrinthe1
 let () = Printf.printf"\n"
 
-let a = genereLabyVide 3 3 
-let () = afficheLabyrinthe a
 (* let () = ouvrirChemin a.murs 7 7 E
 let () = ouvrirChemin a.murs 7 7 O
 let () = ouvrirChemin a.murs 7 7 S
@@ -427,10 +441,12 @@ let () = ouvrirChemin a.murs 7 7 N
 let () = afficheLabyrinthe a
  *)
 
-let a = genereLabyrinthe 15 30
+let a = genereLabyrinthe 15 50
 (* let a = genereLabyVide 20 40
  *)let () = Printf.printf"\n" 
-let () = afficheLabyrinthe a
+
+
+let () = afficheLabyrinthe a 
 
 
 let fin = Printf.printf"End\n"
