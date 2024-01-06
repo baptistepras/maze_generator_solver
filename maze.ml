@@ -8,6 +8,7 @@ type labyrinthe = {
   arrivee : int*int
 }
 
+type direction = N | O | S | E
 
 
 let path = "test/maze_6x6.laby"
@@ -204,8 +205,48 @@ let print_list liste = List.iter (fun x -> Printf.printf"%s\n" x) liste
 let file = load_file path
 
 
+let rec sousGenereLigneVide array numero_ligne  indice_max indice = 
+  if indice > indice_max then
+    ()
+  else (
+    array.(numero_ligne).(indice) <- 1;
+    sousGenereLigneVide array numero_ligne indice_max (indice + 2) 
+
+  )
+let genereLigneVide array numero_ligne indice_max  = 
+  sousGenereLigneVide array numero_ligne indice_max 1 
+
+let rec sousGenereVide array numero_ligne ligne_max indice_max = 
+  if numero_ligne >= ligne_max then
+    ()
+  else(
+    genereLigneVide array numero_ligne indice_max;
+    sousGenereVide array (numero_ligne + 2) ligne_max indice_max; )
 
 
+
+let genereLabyVide hauteur largeur = 
+  let largeur_murs  =  2 * largeur + 1 in
+  let hauteurs_murs =  2 * hauteur + 1 in
+  let e = (1,1) in
+  let s = (3,1) in
+  
+   let lay = (Array.make_matrix hauteurs_murs  largeur_murs 0) in
+    
+    sousGenereVide lay 1 (hauteurs_murs-1) (largeur_murs -1);
+
+
+
+  {largeur = largeur;
+   hauteur = hauteur;
+   murs_largeur = largeur_murs;
+   murs_hauteur = hauteurs_murs;
+   murs = lay;
+   depart = e;
+   arrivee = s 
+  
+  } 
+ 
 
 let printLaby labyrinthe = 
   Printf.printf "Hauteur : %d\n" labyrinthe.hauteur; 
@@ -217,9 +258,179 @@ let printLaby labyrinthe =
   
 
 
+let intDirection n =
+  match n with
+  | 1 -> N
+  | 2 -> O
+  | 3 -> S
+  | 4 -> E
+  | _  -> failwith"Mauvaises valeurs"
+
+let directionsPossibles (visitees:bool array array) numero_ligne indice ligne_max indice_max =
+    (* Regarde dans quelles cases on peut aller en fonction de la position de la case et des cases déjà visitées *)
+  
+    let positions = ref [] in
+
+  if indice + 2 < indice_max   && not visitees.(numero_ligne).(indice + 2) then
+    positions := E :: !positions
+  else
+    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    ();
+
+  if indice - 2 > 0 && not visitees.(numero_ligne).(indice - 2) then
+    positions := O :: !positions
+  else
+    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    ();
+  
+  if numero_ligne + 2 < ligne_max && not visitees.(numero_ligne+2).(indice) then
+    positions := S :: !positions
+  else
+    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    ();
+
+  if numero_ligne - 2 > 0 && not visitees.(numero_ligne - 2).(indice) then
+    positions := N :: !positions
+  else
+    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    ();
+
+  let positions_list = !positions  in
+  positions_list
+
+
+
+let printDirection d = 
+  match d with 
+  | N -> Printf.printf"N "
+  | E -> Printf.printf"E "
+  | O -> Printf.printf"O "
+  | S -> Printf.printf"S "
+
+
+
+
+
+
+let () = Random.self_init  () 
+
+let printDirections (directions : direction list) = List.iter printDirection directions
+
+
+let rec generate_unique_random_numbers count range_max acc =
+  if count <= 0 then acc
+  else
+    let num = Random.int range_max in
+    if List.mem num acc then
+      generate_unique_random_numbers count range_max acc
+    else
+      generate_unique_random_numbers (count - 1) range_max (num :: acc)
+
+let random_numbers_without_repetition count range_max =
+  generate_unique_random_numbers count range_max []
+
+let print_list_int liste = List.iter print_int liste
+
+
+
+
+let movePosition numero_ligne indice direction = 
+  match direction with
+  | N -> (numero_ligne - 2, indice)
+  | E -> (numero_ligne, indice + 2)
+  | O -> (numero_ligne, indice - 2)
+  | S -> (numero_ligne + 2, indice)
+
+
+let ouvrirChemin (array:int array array) last_pos numero_ligne indice = 
+  (*Ouvre le chemin entre une position selon une direction*)
+  (*On supossera que l'on peut aller dans cette direction (verifiee avant)*)
+  let y = ((fst last_pos) + numero_ligne) / 2 in
+  let x = ((snd last_pos) + indice) / 2 in
+  
+
+  array.(y).(x) <- 1
+
+
+let rec sousGenereLaby layout numero_ligne indice (visitees : bool array array) last_pos indice_max ligne_max = 
+  if visitees.(numero_ligne).(indice) then
+    ()
+  else
+    ouvrirChemin layout last_pos numero_ligne indice ; 
+    visitees.(numero_ligne).(indice) <- true;
+    let direc = directionsPossibles visitees numero_ligne indice ligne_max indice_max in
+    let nombre_directions = List.length direc in
+    if (nombre_directions) > 0 then
+      let list_of_numbers = random_numbers_without_repetition nombre_directions nombre_directions in
+      let direction = List.nth direc (List.hd list_of_numbers) in 
+
+      
+      let new_pos = movePosition numero_ligne indice direction in 
+      
+      let _ = Printf.printf"Old pos (%d %d) New pos (%d %d) " numero_ligne indice (fst new_pos) (snd new_pos)  in
+      let _ = printDirection direction in
+      let _ = Printf.printf"\n" in
+
+      sousGenereLaby layout (fst new_pos ) (snd new_pos) visitees (numero_ligne, indice) indice_max ligne_max;
+
+      (*Maintenant on  fait l'appel recusrif pour les autres directions *)
+      (*si on ne peut aller qu'a un endroit , pas besoin de relancer des appels recursifs *)
+      if nombre_directions > 1 then
+        let s1 = List.tl list_of_numbers in
+        let d1 = List.nth direc (List.hd s1) in
+        let pos1 = movePosition numero_ligne indice d1 in
+        sousGenereLaby layout (fst pos1) (snd pos1 ) visitees (numero_ligne, indice) indice_max ligne_max;
+        if nombre_directions > 2 then
+          let s2 = List.tl s1 in
+          let d2 = List.nth direc (List.hd s2) in
+          let pos2 = movePosition numero_ligne indice d2 in
+          sousGenereLaby layout (fst pos2) (snd pos2 ) visitees  (numero_ligne, indice) indice_max ligne_max;
+          if nombre_directions > 3 then
+            let s3 = List.tl s2 in
+            let d3 = List.nth direc (List.hd s3) in
+            let pos3 = movePosition numero_ligne indice d3 in
+            sousGenereLaby layout (fst pos3) (snd pos3 ) visitees  (numero_ligne, indice) indice_max ligne_max;
+          else 
+            ()
+        else
+          ()
+
+      else
+        ()
+
+
+    else
+        ()
+      
+    
+
+let genereLabyrinthe hauteur largeur = 
+  let laby = genereLabyVide hauteur largeur in
+  let depart = laby.depart in
+  let visitees = Array.make_matrix laby.murs_hauteur  laby.murs_largeur  false in
+  sousGenereLaby laby.murs 1 1 visitees  (1,1) (laby.murs_largeur - 1) (laby.murs_hauteur - 1) ;
+  laby
+
+ 
 
 let labyrinthe1 = constructeur path
 let () = Printf.printf"\n"
 let () = printLaby labyrinthe1
-let () =  afficheLabyrinthe labyrinthe1
+let () = Printf.printf"\n"
+
+let a = genereLabyVide 3 3 
+let () = afficheLabyrinthe a
+(* let () = ouvrirChemin a.murs 7 7 E
+let () = ouvrirChemin a.murs 7 7 O
+let () = ouvrirChemin a.murs 7 7 S
+let () = ouvrirChemin a.murs 7 7 N
+let () = afficheLabyrinthe a
+ *)
+
+let a = genereLabyrinthe 15 30
+(* let a = genereLabyVide 20 40
+ *)let () = Printf.printf"\n" 
+let () = afficheLabyrinthe a
+
+
 let fin = Printf.printf"End\n"
