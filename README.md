@@ -4,5 +4,4 @@
     Raphael LEONARDI
     Baptiste PRAS
 ## Description
-    Todo : absolument tout à faire
-         : parler à mon ex
+    Voir pdf de description du projet
