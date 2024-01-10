@@ -4,6 +4,6 @@
    (:standard -warn-error -A -w -20-26-32-39-27))))
 
 (executable
- (name maze)
+ (name main)
  (libraries unix)
  (promote (until-clean)))
