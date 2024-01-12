@@ -37,28 +37,28 @@ let transforme c =
   | ' ' -> 1
   | 'E' -> 2
   | 'S' -> 3
-  | _   -> failwith"Caractère %s interdit" c
+  | _  -> failwith"Caractère %s interdit" c
 
 let verifie_caractere c numero_ligne indice ligne_max indice_max = 
-  (*si la ligne est paire , si l indice dans la ligne est pair, on doit avoir un +  , sinon on doit avoir *)
-  (*si on est sur la premiere ligne on verifie si on a un + ou un -*)
+  (*Si la ligne est paire , si l'indice dans la ligne est pair, on doit avoir un '+', sinon on doit avoir '|'*)
+  (*Si l'on est sur la première ligne on vérifie si l'on a un '+' ou un '-'*)
   if indice > indice_max then
     failwith"Ligne trop grande"
   else
     if numero_ligne = 0 || numero_ligne = ligne_max then
       if indice mod 2 = 0 then c = '+' else c = '-' 
     else
-      (*si on est au début ou a la fin de la ligne on doit avoir un caractere fermant*)
-      if indice == 0 || indice == indice_max then
-        if numero_ligne mod 2  = 0 then c = '+' else c = '|'
+      (*Si l'on est au début ou à la fin de la ligne on doit avoir un caractère fermant*)
+      if indice = 0 || indice = indice_max then
+        if numero_ligne mod 2 = 0 then c = '+' else c = '|'
       else
-        (*sinon on verifie selon la parite de numero_ligne et indice*)
-        match numero_ligne mod 2 , indice mod 2 with 
-        | 0 , 0 ->  c == '+'
-        | 0 , 1 ->  c == '-' || c == 'E' || c == 'S' || c == ' '
-        | 1 , 0 ->  c == '|' || c == 'E' || c == 'S' || c == ' '
-        | 1 , 1 ->  c == 'S' || c == 'E' || c == ' '
-        | _ , _ -> failwith"Ya un probleme avec le modulo" (*ce cas ne sera jamais atteint, c'est juste pour eviter les warnings*) 
+        (*Sinon on vérifie selon la parité de numero_ligne et indice*)
+        match (numero_ligne mod 2), (indice mod 2) with 
+        | 0 , 0 ->  c = '+'
+        | 0 , 1 ->  c = '-' || c = 'E' || c = 'S' || c = ' '
+        | 1 , 0 ->  c = '|' || c = 'E' || c = 'S' || c = ' '
+        | 1 , 1 ->  c = 'S' || c = 'E' || c = ' '
+        | _ , _ -> failwith"Problème de modulo" (*Ce cas ne sera jamais atteint, c'est juste pour éviter les warnings*) 
 
 
 
@@ -82,22 +82,22 @@ let rec verifieLigne (ligne:string) numero_ligne indice ligne_max indice_max (de
     let c = ligne.[indice] in
     (* Vérifie si le caractère est au bon endroit *)
     if not(verifie_caractere c numero_ligne indice ligne_max indice_max) then
-      failwith "Caractere au mauvais endroit"
+      failwith "Caractère au mauvais endroit"
     else
-      if c == 'E' then
+      if c = 'E' then
         if depart = (-1, -1) then
           let new_depart = (numero_ligne, indice) in
-          verifieLigne ligne numero_ligne (indice + 1) indice_max indice_max new_depart arrivee
+          verifieLigne ligne numero_ligne (indice + 1) ligne_max indice_max new_depart arrivee
         else
-          failwith "Plusieurs departs"
-      else if c == 'S' then
+          failwith "Plusieurs départs"
+      else if c = 'S' then
         if arrivee = (-1, -1) then
           let new_arrivee = (numero_ligne, indice) in
-          verifieLigne ligne numero_ligne (indice + 1) indice_max indice_max depart new_arrivee
+          verifieLigne ligne numero_ligne (indice + 1) ligne_max indice_max depart new_arrivee
         else
-          failwith "Plusieurs arrivees"
+          failwith "Plusieurs arrivées"
       else
-        verifieLigne ligne numero_ligne (indice + 1) indice_max indice_max depart arrivee
+        verifieLigne ligne numero_ligne (indice + 1) ligne_max indice_max depart arrivee
 
 
 
@@ -122,14 +122,14 @@ let constructeur file_name =
   let largeur =
   match file with 
   | e::ll ->  String.length e
-  | _     -> failwith"Y  a rien dans le labyrinthe"   in
+  | _     -> failwith"Rien dans le labyrinthe"   in
   let depart, arrivee = verifie file largeur hauteur in
 
-  let _ = Printf.printf"Depart : (%d, %d)\n" (fst depart) (snd depart) in
-  let _ = Printf.printf"Arrivee : (%d, %d)\n" (fst arrivee) (snd arrivee) in
+  (*let _ = Printf.printf"Depart : (%d, %d)\n" (fst depart) (snd depart) in
+  let _ = Printf.printf"Arrivee : (%d, %d)\n" (fst arrivee) (snd arrivee) in*)
 
 
-  (* on construit le labyrinthe*)
+  (*0n construit le labyrinthe*)
   let layout = Array.make_matrix hauteur largeur 0 in
 
 
@@ -208,32 +208,32 @@ let intDirection n =
   | _  -> failwith"Mauvaises valeurs"
 
 let directionsPossibles (visitees:bool array array) numero_ligne indice ligne_max indice_max =
-    (* Regarde dans quelles cases on peut aller en fonction de la position de la case et des cases déjà visitées *)
+    (*Regarde dans quelles cases on peut aller en fonction de la position de la case et des cases déjà visitées*)
   
     let positions = ref [] in
 
   if indice + 2 < indice_max   && not visitees.(numero_ligne).(indice + 2) then
     positions := E :: !positions
   else
-    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    (*Gère le cas où la case à l'Est n'existe pas ou a déjà été visitée *)
     ();
 
   if indice - 2 > 0 && not visitees.(numero_ligne).(indice - 2) then
     positions := O :: !positions
   else
-    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    (*Gère le cas où la case à l'Ouest n'existe pas ou a déjà été visitée *)
     ();
   
   if numero_ligne + 2 < ligne_max && not visitees.(numero_ligne+2).(indice) then
     positions := S :: !positions
   else
-    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    (*Gère le cas où la case au Sud n'existe pas ou a déjà été visitée *)
     ();
 
   if numero_ligne - 2 > 0 && not visitees.(numero_ligne - 2).(indice) then
     positions := N :: !positions
   else
-    (* Gérer le cas où la case à l'Est n'existe pas ou a été visitée *)
+    (*Gère le cas où la case au Nord n'existe pas ou a déjà été visitée *)
     ();
 
   let positions_list = !positions  in
@@ -274,7 +274,7 @@ let movePosition numero_ligne indice direction =
 
 let ouvrirChemin (array:int array array) last_pos numero_ligne indice = 
   (*Ouvre le chemin entre une position selon une direction*)
-  (*On supossera que l'on peut aller dans cette direction (verifiee avant)*)
+  (*On supossera que l'on peut aller dans cette direction (condition verifiée avant)*)
   let y = ((fst last_pos) + numero_ligne) / 2 in
   let x = ((snd last_pos) + indice) / 2 in
   
@@ -303,8 +303,8 @@ let rec sousGenereLaby layout numero_ligne indice (visitees : bool array array) 
 
       sousGenereLaby layout (fst new_pos ) (snd new_pos) visitees (numero_ligne, indice) indice_max ligne_max;
 
-      (*Maintenant on  fait l'appel recusrif pour les autres directions *)
-      (*si on ne peut aller qu'a un endroit , pas besoin de relancer des appels recursifs *)
+      (*On appellerécursivement pour les autres directions*)
+      (*Si on ne peut aller qu'à un endroit, pas besoin de relancer des appels récursifs*)
       if nombre_directions > 1 then
         let s1 = List.tl list_of_numbers in
         let d1 = List.nth direc (List.hd s1) in
@@ -358,6 +358,40 @@ let genereLabyrinthe hauteur largeur =
   laby.murs.(fst arr).(snd arr) <- 3;
   laby
 
+
+let rec resolutionRec laby visit chemin case dir =
+  (*dir permet de vérifier la présence d'un mur ou non entre l'ancienne case et la nouvelle, selon la direction prise*)
+  if not (fst case >= 0 && fst case < laby.murs_hauteur && snd case >= 0 && snd case < laby.murs_largeur) || 
+    visit.(fst case).(snd case) || laby.murs.(fst case + fst dir).(snd case + snd dir) = 0
+    then ([], false)  (*Déplacement impossible = abandon*)
+  else
+    let chemin = (fst case + fst dir, snd case + snd dir)::case::chemin in  (*On sauvegarde la case courante dans le chemin*)
+    let () = visit.(fst case).(snd case) <- true in (*On coche la case courante comme désormais visitée*)
+    if case = laby.arrivee then
+      (chemin, true)  (*On est arrivé, on renvoie le chemin*)
+    else
+      let chemin1 = resolutionRec laby visit chemin (fst case + 2, snd case) (-1, 0) in (*Sud*)
+      let chemin2 = resolutionRec laby visit chemin (fst case - 2, snd case) (1, 0) in (*Nord*)
+      let chemin3 = resolutionRec laby visit chemin (fst case, snd case + 2) (0, -1) in (*Est*)
+      let chemin4 = resolutionRec laby visit chemin (fst case, snd case - 2) (0, 1) in (*Ouest*)
+      if snd chemin1 then chemin1  (*On vérifie pour chaque chemin s'il a aboutit*)
+      else if snd chemin2 then chemin2
+      else if snd chemin3 then chemin3        
+      else if snd chemin4 then chemin4
+      else ([], false)
+
+      
+let resolution laby =
+  (*On rappelle qu'une "salle" se trouve toujours sur un indice impair, un mur sur un indice pair*)
+  let visitees = Array.make_matrix laby.murs_hauteur laby.murs_largeur false in
+  visitees.(fst laby.depart).(snd laby.depart) <- false;
+  let chemin = resolutionRec laby visitees [] laby.depart (0, 0) in (*Cherche le bon chemin*)
+    let rec transformeChemin laby chemin = (*Remplace par des 4 dans le laby les cases du chemin*)
+      match chemin with
+      | e::ll -> if laby.murs.(fst e).(snd e) = 1 then (*Assure que l'on n'efface pas un mur pour y passer*)
+        laby.murs.(fst e).(snd e) <- 4; transformeChemin laby ll
+      | _ -> laby in
+    transformeChemin laby (fst chemin)
  
 (* let labyrinthe1 = constructeur path
 let () = Printf.printf"\n"

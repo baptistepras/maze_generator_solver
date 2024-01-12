@@ -6,16 +6,17 @@ match numero_ligne mod 2 , indice mod 2 with
 | 0 , 0       -> Printf.printf"+"
 | 0 , 1       -> Printf.printf"-"
 | 1 , 0 | 1, 1-> Printf.printf"|"
-| _, _ -> failwith"Probleme avec le modulo" (* cette ligne ne se fait jamais, c'est pur eviter les warnings du pattern matching *)
+| _, _ -> failwith"Problème de modulo" (* cette ligne ne se fait jamais, c'est pur eviter les warnings du pattern matching *)
 
 
 let printCaractere (layout: int array array) numero_ligne indice = 
   let i1 = layout.(numero_ligne).(indice) in
   match i1 with 
-  | 0 -> printMur numero_ligne indice
-  | 1 -> Printf.printf" "
-  | 2 -> Printf.printf"E"
-  | 3 -> Printf.printf"S"
+  | 0 -> printMur numero_ligne indice (*Mur*)
+  | 1 -> Printf.printf" " (*Case vide*)
+  | 2 -> Printf.printf"E" (*Entrée*)
+  | 3 -> Printf.printf"S" (*Sortie*)
+  | 4 -> Printf.printf"\027[31mX\027[0m" (*Chemin*)
   | _ -> failwith"Valeur interdite dans le layout"
 
 let  printLigne (layout : int array array) numero_ligne indice_max = 
@@ -79,8 +80,55 @@ let printDirections (directions : direction list) = List.iter printDirection dir
 
 let print_list_int liste = List.iter print_int liste
   
-
+(*On initialise une seed random*)
 let () = Random.self_init  () 
+
+(*
 let laby = Maze.genereLabyrinthe 10 10
 let () = afficheLabyrinthe laby
+
+let () = Printf.printf"\n"
+*)
+
+let help = "Fonction help\n"
+
+let printMessageErreur  = "Arguments invalides, tapez --help pour mieux comprendre" 
+
+let read_parameters = 
+  let nb_parameters = Array.length Sys.argv - 1 in 
+  if nb_parameters = 1 then
+    if Sys.argv.(1) = "--help" then
+      Printf.printf"%s"help
+    else
+      Printf.printf"%s" printMessageErreur
+  else
+    if nb_parameters = 2 then
+      if Sys.argv.(1) = "print" then
+        let laby = constructeur (Sys.argv.(2)) in
+        afficheLabyrinthe laby
+      else
+        if Sys.argv.(1) = "solve" then
+          let laby = resolution (constructeur (Sys.argv.(2))) in
+          afficheLabyrinthe laby
+        else
+          Printf.printf"%s" printMessageErreur
+    else
+      if Sys.argv.(1) = "random" then
+        let labyUnsolved = genereLabyrinthe (int_of_string Sys.argv.(2)) (int_of_string Sys.argv.(3)) in
+        afficheLabyrinthe labyUnsolved;
+        let labySolved = resolution labyUnsolved in
+        afficheLabyrinthe labySolved 
+      else
+        Printf.printf"%s" printMessageErreur
+
+
+
+
+      
+
+  
+
+
+let () = read_parameters 
+
 let () = Printf.printf"\n"
