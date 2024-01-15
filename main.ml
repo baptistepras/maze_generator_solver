@@ -19,22 +19,25 @@ let printCaractere (layout: int array array) numero_ligne indice =
   | 4 -> Printf.printf"\027[31mX\027[0m" (*Chemin*)
   | _ -> failwith"Valeur interdite dans le layout"
 
-let  printLigne (layout : int array array) numero_ligne indice_max = 
-  let rec sousPrintLigne (layout : int array array) numero_ligne indice indice_max =
-    if indice > indice_max then (
-      Printf.printf"\n"
+let  printLigne (layout : int array array) numero_ligne indice_max ligne_max = 
+  let rec sousPrintLigne (layout : int array array) numero_ligne indice indice_max ligne_max=
+    if (indice > indice_max) then (
+      if (numero_ligne < ligne_max) then(
+        Printf.printf"\n"; )
+      else
+        ()
     )
     else(
       printCaractere layout numero_ligne indice;
-      sousPrintLigne layout numero_ligne (indice + 1 ) indice_max ;) in
+      sousPrintLigne layout numero_ligne (indice + 1 ) indice_max  ligne_max;) in
       
-  sousPrintLigne layout numero_ligne 0 indice_max
+  sousPrintLigne layout numero_ligne 0 indice_max ligne_max
 
 let rec sousAffiche layout numero_ligne ligne_max indice_max = 
   if numero_ligne > ligne_max then(
-    Printf.printf"\n"
+    ()
   )else(
-    printLigne layout numero_ligne indice_max;
+    printLigne layout numero_ligne indice_max ligne_max;
     sousAffiche layout (numero_ligne + 1) ligne_max indice_max
   )
 
@@ -109,26 +112,22 @@ let read_parameters =
       else
         if Sys.argv.(1) = "solve" then
           let laby = resolution (constructeur (Sys.argv.(2))) in
-          afficheLabyrinthe laby
+          afficheLabyrinthe laby;
+          Printf.printf"\n"
         else
           Printf.printf"%s" printMessageErreur
     else
       if Sys.argv.(1) = "random" then
         let labyUnsolved = genereLabyrinthe (int_of_string Sys.argv.(2)) (int_of_string Sys.argv.(3)) in
         afficheLabyrinthe labyUnsolved;
-        let labySolved = resolution labyUnsolved in
-        afficheLabyrinthe labySolved 
+        (*let labySolved = resolution labyUnsolved in
+        afficheLabyrinthe labySolved*)
       else
         Printf.printf"%s" printMessageErreur
 
-
-
-
-      
 
   
 
 
 let () = read_parameters 
 
-let () = Printf.printf"\n"
