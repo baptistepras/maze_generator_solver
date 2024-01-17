@@ -22,4 +22,5 @@
         - maze_3x2FAUX3.laby
         - maze_4x8.laby
         - maze_6x6.laby
+        - maze_14x40.laby
         - maze_100x100.laby
