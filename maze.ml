@@ -397,4 +397,7 @@ let resolution laby =
         laby.murs.(fst e).(snd e) <- 4; transformeChemin laby ll
       | _ -> laby in
     transformeChemin laby (fst chemin)
+    
+(*Si aucun chemin n'est trouvé, le labyrinthe restera le même qu'au préalable, aucune erreur ne sera invoqué
+Cependant, le labyrinthe est supposé connexe, il existe donc normalement toujours un chemin*)
  
