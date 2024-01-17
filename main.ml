@@ -65,8 +65,8 @@ let printCaractere (layout: int array array) numero_ligne indice =
   match i1 with 
   | 0 -> printMur numero_ligne indice (*Mur*)
   | 1 -> Printf.printf" " (*Case vide*)
-  | 2 -> Printf.printf"\027[32mS\027[0m" (*Entrée*)
-  | 3 -> Printf.printf"\027[31mE\027[0m" (*Sortie*)
+  | 2 -> Printf.printf"S" (*Entrée*)
+  | 3 -> Printf.printf"E" (*Sortie*)
   | 4 -> Printf.printf"\027[33mX\027[0m" (*Chemin*)
   | _ -> failwith"Valeur interdite dans la grille"
 
