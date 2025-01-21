@@ -1,4 +1,3 @@
-```python
 # Maze generator and solver
 
 This project was made in groups of 2 and can generate, solve and print mazes using backtracking in Ocaml. This project was made in L2.
@@ -21,4 +20,3 @@ Then execute `main.exe` with valid options. Here are all the possibilities:
 With print and solve options, you can add --pretty to print a better looking version of the maze. For example, do `./main.exe solve --pretty test/maze_4x8.laby`.
 
 Do `./main.exe --help` to be recalled these (in French).
-```
