@@ -1,6 +1,6 @@
 # Maze generator and solver
 
-This project was made in groups of 2 and can generate, solve and print mazes using backtracking in Ocaml. This project was made in L2.
+This project was made in groups of 2 and can generate, solve and print mazes using backtracking in Ocaml. This project was made during my second year of university.
 
 # Members who contributed to this project
 
