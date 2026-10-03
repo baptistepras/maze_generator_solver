@@ -1,22 +1,21 @@
-# Maze generator and solver
+# Maze Generator and Solver
 
-This project was made in groups of 2 and can generate, solve and print mazes using backtracking in Ocaml. This project was made during my second year of university.
+Generates, solves and prints mazes in OCaml, using backtracking.
 
-# Members who contributed to this project
+## Usage
 
-Raphael LEONARDI
-Baptiste PRAS
+```bash
+dune build
+./main.exe print test/maze_4x8.laby             # print a maze
+./main.exe solve test/maze_4x8.laby             # solve it and print the solution
+./main.exe solve --pretty test/maze_4x8.laby    # nicer output
+./main.exe random 10 20                         # random maze of height 10 and width 20
+./main.exe --help                               # help (in French)
+dune clean
+```
 
-# How to use it ?
+Example mazes are in `test/`.
 
-You first need to compile the code, do `dune build` for this. `dune clean` will remove any file linked to the compilation.
+## Authors
 
-Then execute `main.exe` with valid options. Here are all the possibilities:
-
-- ./main.exe print <name_of_a_maze>: print a given maze. Some mazes are given in `test`
-- ./main.exe solve <name_of_a_maze>: solve a given maze and print the solution.
-- ./main.exe random <height> <width>: generate and print a random maze of height*width size. Height and width must be strictly positive integers
-
-With print and solve options, you can add --pretty to print a better looking version of the maze. For example, do `./main.exe solve --pretty test/maze_4x8.laby`.
-
-Do `./main.exe --help` to be recalled these (in French).
+Raphael Leonardi and Baptiste Pras.
